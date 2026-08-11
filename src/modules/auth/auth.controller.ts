@@ -5,6 +5,7 @@ import { LoginDto } from './dto/login.dto';
 import { Request } from 'express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AuthenticatedUser } from './interfaces/authenticated-user.interface';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -21,9 +22,26 @@ export class AuthController {
 
     @Post('login')
     async login(
-        @Body() loginDto: LoginDto
+        @Body() loginDto: LoginDto,
+        @Req() request: Request,
     ) {
-        return this.authService.login(loginDto);
+        return this.authService.login(
+            loginDto,
+            {
+                deviceName: loginDto.deviceName,
+                userAgent: request.headers['user-agent'],
+                ipAddress: request.ip,
+            }
+        );
+    }
+
+    @Post('refresh')
+    refresh(
+        @Body() refreshTokenDto: RefreshTokenDto,
+    ) {
+        return this.authService.refresh(
+            refreshTokenDto.refreshToken,
+        );
     }
 
     @Get('me')

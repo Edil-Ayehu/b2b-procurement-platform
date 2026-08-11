@@ -26,8 +26,8 @@ export class User {
   @Column({ default: true })
   isActive!: boolean;
 
-  @Column({ type: "varchar", nullable: true })
-  refreshTokenHash!: string | null;
+  // @Column({ type: "varchar", nullable: true })
+  // refreshTokenHash!: string | null;
 
   @CreateDateColumn()
   createdAt!: Date;

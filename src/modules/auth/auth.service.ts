@@ -1,4 +1,5 @@
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { User } from '../users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,6 +7,9 @@ import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
+import { UserSession } from './entities/user-session.entity';
+import { RefreshTokenPayload } from './interfaces/refresh-token-payload.interface';
+import { createHash, randomUUID } from 'crypto';
 
 
 @Injectable()
@@ -14,7 +18,12 @@ export class AuthService {
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
 
-        private readonly jwtService: JwtService
+        @InjectRepository(UserSession)
+        private readonly userSessionRepository: Repository<UserSession>,
+
+        private readonly jwtService: JwtService,
+
+        private readonly configService: ConfigService,
     ) {}
 
     async register(registerDto: RegisterDto) {
@@ -52,7 +61,14 @@ export class AuthService {
         }
     }
 
-    async login(loginDto: LoginDto) {
+    async login(
+        loginDto: LoginDto,
+        metadata?: {
+            deviceName?: string,
+            userAgent?: string,
+            ipAddress?: string,
+        }
+    ) {
         const user = await this.userRepository.findOne({
             where: {
                 email: loginDto.email
@@ -60,7 +76,7 @@ export class AuthService {
         });
 
         if (!user) {
-            throw new UnauthorizedException('Invalid email or password');
+            throw new UnauthorizedException('Invalid login credentials');
         }
 
         const passwordMatches = await bcrypt.compare(
@@ -69,51 +85,160 @@ export class AuthService {
         );
 
         if (!passwordMatches) {
-            throw new UnauthorizedException('Invalid email or password');
+            throw new UnauthorizedException('Invalid login credentials');
         }
 
         if (!user.isActive) {
             throw new UnauthorizedException('User account is inactive');
         }
 
-        return this.generateTokens(user);
+        const session = await this.createSession(
+            user,
+            metadata?.deviceName,
+            metadata?.userAgent,
+            metadata?.ipAddress,
+        );
+
+        const tokens = await this.generateTokens(
+            user,
+            session,
+        );
+
+        return tokens;
     }
 
-    private async generateTokens(user: User) {
-        const payload = {
+    private async createSession(
+        user: User,
+        deviceName?: string,
+        userAgent?: string,
+        ipAddress?: string,
+    ) {
+        const session = this.userSessionRepository.create({
+            userId: user.id,
+            deviceName: deviceName ?? null,
+            userAgent: userAgent ?? null,
+            ipAddress: ipAddress ?? null,
+            refreshTokenHash: '',
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            revokedAt: null,
+        });
+
+        return this.userSessionRepository.save(session)
+    }
+
+    private hashToken(token: string): string {
+        return createHash('sha256').update(token).digest('hex');
+    }
+
+    private async generateTokens(
+        user: User,
+        session: UserSession,
+    ) {
+        const accessPayload = {
             sub: user.id,
             email: user.email,
         };
 
+        const refreshPayload = {
+            sub: user.id,
+            sid: session.id,
+            type: 'refresh' as const,
+        };
+
         const accessToken = await this.jwtService.signAsync(
-            payload,
+            accessPayload,
             {
+                secret: this.configService.getOrThrow<string>('JWT_SECRET'),
                 expiresIn: '15m',
             },
         );
 
         const refreshToken = await this.jwtService.signAsync(
-            payload,
+            refreshPayload,
             {
+                secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
                 expiresIn: '7d'
             }
         );
 
+        const tokenDigest = this.hashToken(refreshToken);
         const refreshTokenHash = await bcrypt.hash(
-            refreshToken,
+            tokenDigest,
             12,
         );
 
-        await this.userRepository.update(
-            user.id,
-            {
-                refreshTokenHash,
-            }
-        );
+        session.refreshTokenHash = refreshTokenHash;
+        await this.userSessionRepository.save(session);
 
         return {
             accessToken,
             refreshToken,
         }
+    }
+
+    async refresh(refreshToken: string) {
+        let payload: RefreshTokenPayload;
+
+        try {
+            payload = await this.jwtService.verifyAsync<RefreshTokenPayload>(
+                refreshToken,
+                {
+                    secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+                },
+            );
+
+        } catch {
+            throw new UnauthorizedException("Invalid or expired refresh token")
+        }
+
+        if (payload.type != 'refresh') {
+            throw new UnauthorizedException("Invalid refresh token")
+        }
+
+        const session = await this.userSessionRepository.findOne({
+            where: {
+                id: payload.sid,
+            },
+            relations: {
+                user: true
+            }
+        })
+
+        if (!session) {
+            throw new UnauthorizedException("Session not found")
+        }
+
+        if (session.revokedAt) {
+            throw new UnauthorizedException("Session has been revoked")
+        }
+
+        if (new Date(session.expiresAt).getTime() < Date.now()) {
+            throw new UnauthorizedException("Session has expired.")
+        }
+
+        const tokenDigest = this.hashToken(refreshToken);
+        const tokenMatches = await bcrypt.compare(
+            tokenDigest,
+            session.refreshTokenHash,
+        )
+
+        if (!tokenMatches) {
+            // Refresh-token reuse detected
+            session.revokedAt = new Date();
+            await this.userSessionRepository.save(session);
+
+            throw new UnauthorizedException("Invalid refresh token")
+        }
+
+        const user = session.user
+
+        if (!user || !user.isActive) {
+            throw new UnauthorizedException("User account is inactive")
+        }
+
+        // Generate NEW tokens and rotate stored refresh token hash
+        const tokens = await this.generateTokens(user, session);
+
+        return tokens;
     }
 }

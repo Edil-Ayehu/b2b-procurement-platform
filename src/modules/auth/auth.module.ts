@@ -7,10 +7,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigService, ConfigModule } from '@nestjs/config';
 import { StringValue} from 'ms';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { UserSession } from './entities/user-session.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, UserSession]),
 
     JwtModule.registerAsync({
       imports: [ConfigModule],

@@ -14,9 +14,7 @@ describe('AppController', () => {
     appController = app.get<AppController>(AppController);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
-    });
+  it('should return API status string', () => {
+    expect(appController.getHello()).toBe('B2B Procurement Platform API is running successfully!');
   });
 });
