@@ -62,4 +62,12 @@ export class AuthController {
             refreshTokenDto.refreshToken
         );
     }
+
+    @Post('logout-all')
+    @UseGuards(JwtAuthGuard)
+    logoutAll(
+        @Req() request: Request & { user: AuthenticatedUser}
+    ) {
+        return this.authService.logoutAll(request.user.id);
+    }
 }

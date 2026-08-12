@@ -1,7 +1,7 @@
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { User } from '../users/entities/user.entity';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
@@ -315,4 +315,21 @@ export class AuthService {
             message: "Logged out successfully.(6)"
         }
     }
+
+    async logoutAll(userId: string) {
+        await this.userSessionRepository.update(
+            {
+                userId: userId,
+                revokedAt: IsNull(),
+            },
+            {
+                revokedAt: new Date(),
+            },
+        );
+
+        return {
+            message: "Logged out from all devices.",
+        };
+    }
+
 }
