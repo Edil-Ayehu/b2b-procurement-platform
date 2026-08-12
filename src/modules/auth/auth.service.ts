@@ -332,4 +332,24 @@ export class AuthService {
         };
     }
 
+    async getSessions(userId: string) {
+        return this.userSessionRepository.find({
+            where: {
+                userId,
+                revokedAt: IsNull(),
+            },
+            select: {
+                id: true,
+                deviceName: true,
+                userAgent: true,
+                ipAddress: true,
+                expiresAt: true,
+                createdAt: true,
+            },
+            order: {
+                createdAt: 'DESC'
+            }
+        })
+    }
+
 }

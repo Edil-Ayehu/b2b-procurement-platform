@@ -70,4 +70,12 @@ export class AuthController {
     ) {
         return this.authService.logoutAll(request.user.id);
     }
+
+    @Get('sessions')
+    @UseGuards(JwtAuthGuard)
+    getSessions(
+        @Req() request: Request & { user: AuthenticatedUser}
+    ) {
+        return this.authService.getSessions(request.user.id)
+    }
 }
