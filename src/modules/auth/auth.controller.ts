@@ -53,4 +53,13 @@ export class AuthController {
     ) {
         return request.user
     }
+
+    @Post('logout')
+    logout(
+        @Body() refreshTokenDto: RefreshTokenDto
+    ) {
+        return this.authService.logout(
+            refreshTokenDto.refreshToken
+        );
+    }
 }

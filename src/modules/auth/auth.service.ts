@@ -241,4 +241,78 @@ export class AuthService {
 
         return tokens;
     }
+
+    async logout(refreshToken: string) {
+        let payload: RefreshTokenPayload;
+
+        // 1. Verify refresh token
+        try{
+            payload = await this.jwtService.verifyAsync<RefreshTokenPayload>(
+                refreshToken,
+                {
+                    secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+                }
+            )
+        } catch {
+            // Event if the token is expired, logout should be idempotent.
+
+            return {
+                message: "Logged out successfully(1)"
+            }
+        }
+
+        // 2. Make sure this is actually a refresh token
+
+        if (payload.type !== 'refresh') {
+            return {
+                message: "Logged out successfully(2)",
+            }
+        }
+
+        // 3. Find the session
+        const session = await this.userSessionRepository.findOne({
+            where: {
+                id: payload.sid,
+                userId: payload.sub,
+            },
+        });
+
+         if (!session) {
+            return {
+                message: 'Logged out successfully(3)'
+            }
+        }
+
+        // 4. Already revoked - nothing to do
+        if (session.revokedAt) {
+            return {
+                message: "Logged out successfully(4)",
+            }
+        }
+
+        // 5. verify that this is the current refresh token
+        const tokenDigest = this.hashToken(refreshToken);
+
+        const tokenMatches = await bcrypt.compare(
+            tokenDigest,
+            session.refreshTokenHash,
+        );
+
+        if (!tokenMatches) {
+            // this is an old/invalid refresh token.
+            return {
+                message: 'Logged out successfully(5)'
+            }
+        }
+
+
+        // 6. Revoke the session
+        session.revokedAt = new Date();
+
+        await this.userSessionRepository.save(session);
+
+        return {
+            message: "Logged out successfully.(6)"
+        }
+    }
 }
