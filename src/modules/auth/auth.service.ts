@@ -352,4 +352,28 @@ export class AuthService {
         })
     }
 
+    async revokeSession(
+        userId: string,
+        sessionId: string,
+    ) {
+        const session = await this.userSessionRepository.findOne({
+            where: {
+                id: sessionId,
+                userId,
+            }
+        });
+
+        if (!session) {
+            throw new UnauthorizedException('Session not found');
+        }
+
+        session.revokedAt = new Date();
+
+        await this.userSessionRepository.save(session);
+
+        return {
+            message: "Session revoked successfully!",
+        }
+    }
+
 }

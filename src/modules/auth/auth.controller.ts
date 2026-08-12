@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards, Delete, Param } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -77,5 +77,17 @@ export class AuthController {
         @Req() request: Request & { user: AuthenticatedUser}
     ) {
         return this.authService.getSessions(request.user.id)
+    }
+
+    @Delete('sessions/:sessionId')
+    @UseGuards(JwtAuthGuard)
+    revokeSession(
+        @Param('sessionId') sessionId: string,
+        @Req() request: Request & { user: AuthenticatedUser}
+    ) {
+        return this.authService.revokeSession(
+            request.user.id,
+            sessionId,
+        )
     }
 }
