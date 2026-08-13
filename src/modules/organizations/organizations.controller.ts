@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -59,6 +59,19 @@ export class OrganizationsController {
             organizationId,
             memberId,
             dto
+        );
+    }
+
+    @Delete(":organizationId/members/:memberId")
+    @UseGuards(JwtAuthGuard, OrganizationRoleGuard)
+    @OrganizationRoles(OrganizationRole.ADMIN, OrganizationRole.OWNER)
+    async removeMember(
+        @Param('organizationId') organizationId: string,
+        @Param('memberId') memberId: string,
+    ) {
+        return await this.organizationsService.removeMember(
+            organizationId,
+            memberId,
         );
     }
 }

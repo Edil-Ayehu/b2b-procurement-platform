@@ -233,4 +233,33 @@ export class OrganizationsService {
             isActive: member.isActive
         };
     }
+
+    async removeMember(
+        organizationId: string,
+        memberId: string,
+    ) {
+        const member = await this.memberRepo.findOne({
+            where: {
+                organizationId,
+                id: memberId,
+                isActive: true,
+            }
+        });
+
+        if (!member) {
+            throw new NotFoundException('Organization member not found');
+        }
+
+        if (member.role === OrganizationRole.OWNER) {
+            throw new ConflictException("Organization owner cannot be removed!");
+        }
+
+        member.isActive = false;
+
+        await this.memberRepo.save(member);
+
+        return {
+            message: "Organization member removed successfully!"
+        }
+    }
 }
