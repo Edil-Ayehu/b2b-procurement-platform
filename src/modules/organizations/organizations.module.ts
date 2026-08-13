@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Organization } from './entities/organization.entity';
 import { OrganizationMember } from './entities/organization-member.entity';
 import { User } from '../users/entities/user.entity';
+import { OrganizationRoleGuard } from './guards/organization-role.guard';
 
 @Module({
   imports: [
@@ -15,7 +16,13 @@ import { User } from '../users/entities/user.entity';
     ])
   ],
   controllers: [OrganizationsController],
-  providers: [OrganizationsService],
-  exports: [OrganizationsService]
+  providers: [
+    OrganizationsService,
+    OrganizationRoleGuard,
+],
+  exports: [
+    OrganizationsService,
+    OrganizationRoleGuard,
+]
 })
 export class OrganizationsModule {}

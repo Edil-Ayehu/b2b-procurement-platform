@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Organization } from './entities/organization.entity';
 import { Repository } from 'typeorm';
@@ -6,6 +6,7 @@ import { OrganizationMember } from './entities/organization-member.entity';
 import { User } from '../users/entities/user.entity';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { OrganizationRole } from './enums/organization-role.enum';
+import { AddOrganizationMemberDto } from './dto/add-organization-member.dto';
 
 @Injectable()
 export class OrganizationsService {
@@ -86,5 +87,80 @@ export class OrganizationsService {
                 role: owner.role,
             }
         }
+    }
+
+    async addMember(
+        organizationId: string,
+        dto: AddOrganizationMemberDto,
+    ) {
+
+        if (dto.role == OrganizationRole.OWNER) {
+            throw new ConflictException("Owner role can't be assigned through this endpoint.")
+        }
+
+        const organization = await this.organizationRepo.findOne({
+            where: {
+                id: organizationId,
+                isActive: true,
+            }
+        });
+
+        if (!organization) {
+            throw new NotFoundException('Organization not found');
+        }
+
+        const user = await this.userRepo.findOne({
+            where: {
+                email: dto.email
+            }
+        });
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        const existing = await this.memberRepo.findOne({
+            where: {
+                organizationId,
+                userId: user.id
+            }
+        });
+
+        if (existing) {
+            throw new ConflictException('User is already a member of this organization');
+        }
+
+        const member = this.memberRepo.create({
+            organizationId,
+            userId: user.id,
+            role: dto.role,
+            isActive: true,
+        });
+
+        const saved = await this.memberRepo.save(member);
+
+        return {
+            id: saved.id,
+            organizationId,
+            userId: user.id,
+            role: saved.role,
+            isActive: saved.isActive
+        }
+    }
+
+    async findMembership(
+        organizationId: string,
+        userId: string,
+    ) {
+        return this.memberRepo.findOne({
+            where: {
+                organizationId,
+                userId,
+            },
+            relations: {
+                organization: true,
+                user: true,
+            }
+        });
     }
 }
