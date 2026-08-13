@@ -163,4 +163,38 @@ export class OrganizationsService {
             }
         });
     }
+
+    async getMembers(
+        organizationId: string,
+    ) {
+        const members = await this.memberRepo.find({
+            where: {
+                organizationId,
+                isActive: true
+            },
+            relations: {
+                user: true,
+            },
+            order: {
+                createdAt: 'ASC'
+            }
+        });
+
+        return members.map((member) => ({
+            id: member.id,
+
+            user: {
+                id: member.user.id,
+                firstName: member.user.firstName,
+                lastName: member.user.lastName,
+                email: member.user.email,
+            },
+
+            role: member.role,
+
+            isActive: member.isActive,
+
+            createdAt: member.createdAt,
+        }));
+    }
 }

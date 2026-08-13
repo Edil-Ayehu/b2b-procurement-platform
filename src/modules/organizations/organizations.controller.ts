@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -35,5 +35,14 @@ export class OrganizationsController {
             organizationId, 
             addOrganizationMemberDto,
         )
+    }
+
+    @Get(':organizationId/members')
+    @UseGuards(JwtAuthGuard, OrganizationRoleGuard)
+    @OrganizationRoles(OrganizationRole.ADMIN, OrganizationRole.OWNER, OrganizationRole.PROCUREMENT_MANAGER)
+    getMembers(
+        @Param('organizationId') organizationId: string
+    ) {
+        return this.organizationsService.getMembers(organizationId)
     }
 }
