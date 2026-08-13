@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -7,6 +7,7 @@ import { OrganizationRoleGuard } from './guards/organization-role.guard';
 import { OrganizationRoles } from './decorators/organization-roles.decorator';
 import { OrganizationRole } from './enums/organization-role.enum';
 import { AddOrganizationMemberDto } from './dto/add-organization-member.dto';
+import { UpdateOrganizationMemberDto } from './dto/update-organization-member.dto';
 
 
 @Controller('organizations')
@@ -44,5 +45,20 @@ export class OrganizationsController {
         @Param('organizationId') organizationId: string
     ) {
         return this.organizationsService.getMembers(organizationId)
+    }
+
+    @Patch(":organizationId/members/:memberId")
+    @UseGuards(JwtAuthGuard, OrganizationRoleGuard)
+    @OrganizationRoles(OrganizationRole.ADMIN, OrganizationRole.OWNER)
+    async updateMemberRole(
+       @Body() dto: UpdateOrganizationMemberDto,
+       @Param('organizationId') organizationId: string,
+       @Param('memberId') memberId: string,
+    ) {
+        return await this.organizationsService.updateMemberRole(
+            organizationId,
+            memberId,
+            dto
+        );
     }
 }

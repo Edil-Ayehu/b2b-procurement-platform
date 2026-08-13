@@ -7,6 +7,7 @@ import { User } from '../users/entities/user.entity';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { OrganizationRole } from './enums/organization-role.enum';
 import { AddOrganizationMemberDto } from './dto/add-organization-member.dto';
+import { UpdateOrganizationMemberDto } from './dto/update-organization-member.dto';
 
 @Injectable()
 export class OrganizationsService {
@@ -196,5 +197,40 @@ export class OrganizationsService {
 
             createdAt: member.createdAt,
         }));
+    }
+
+    async updateMemberRole(
+        organizationId: string,
+        memberId: string,
+        dto: UpdateOrganizationMemberDto
+    ) {
+        if (dto.role === OrganizationRole.OWNER) {
+            throw new ConflictException('Owner role cannot be assigned through this endpoint.')
+        }
+
+        const member = await this.memberRepo.findOne({
+            where: {
+                id: memberId,
+                organizationId,
+            }
+        });
+
+        if (!member) {
+            throw new NotFoundException('Organization member not found.')
+        }
+
+        if (member.role === OrganizationRole.OWNER) {
+            throw new ConflictException('Owner role cannot be changed here.')
+        }
+
+        member.role = dto.role;
+
+        await this.memberRepo.save(member)
+
+        return {
+            id: member.id,
+            role: member.role,
+            isActive: member.isActive
+        };
     }
 }
