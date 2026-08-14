@@ -19,6 +19,10 @@ export const ROLE_PERMISSIONS: Record<
         OrganizationPermission.PROCUREMENT_CREATE,
         OrganizationPermission.PROCUREMENT_VIEW,
         OrganizationPermission.PROCUREMENT_APPROVE,
+        OrganizationPermission.PROCUREMENT_SUBMIT,
+        OrganizationPermission.PROCUREMENT_CANCEL,
+        OrganizationPermission.PROCUREMENT_REJECT,
+        OrganizationPermission.PROCUREMENT_UPDATE,
 
         OrganizationPermission.PURCHASE_ORDER_CREATE,
         OrganizationPermission.PURCHASE_ORDER_VIEW,
@@ -35,6 +39,10 @@ export const ROLE_PERMISSIONS: Record<
         OrganizationPermission.PROCUREMENT_CREATE,
         OrganizationPermission.PROCUREMENT_VIEW,
         OrganizationPermission.PROCUREMENT_APPROVE,
+        OrganizationPermission.PROCUREMENT_SUBMIT,
+        OrganizationPermission.PROCUREMENT_CANCEL,
+        OrganizationPermission.PROCUREMENT_REJECT,
+        OrganizationPermission.PROCUREMENT_UPDATE,
 
         OrganizationPermission.PURCHASE_ORDER_CREATE,
         OrganizationPermission.PURCHASE_ORDER_VIEW,
@@ -45,6 +53,8 @@ export const ROLE_PERMISSIONS: Record<
 
         OrganizationPermission.PROCUREMENT_CREATE,
         OrganizationPermission.PROCUREMENT_VIEW,
+        OrganizationPermission.PROCUREMENT_UPDATE,
+        OrganizationPermission.PROCUREMENT_SUBMIT,
 
         OrganizationPermission.PURCHASE_ORDER_VIEW,
     ],

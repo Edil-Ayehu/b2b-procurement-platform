@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
+import { ProcurementModule } from './modules/procurement/procurement.module';
 
 
 @Module({
@@ -32,6 +33,8 @@ import { OrganizationsModule } from './modules/organizations/organizations.modul
     AuthModule,
 
     OrganizationsModule,
+
+    ProcurementModule,
   ],
   controllers: [],
   providers: [],
