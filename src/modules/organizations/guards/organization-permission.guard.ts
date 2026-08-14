@@ -56,6 +56,10 @@ export class OrganizationPermissionGuard implements CanActivate {
             throw new ForbiddenException('Your organization membership is inactive!')
         }
 
+        if (!membership.organization || !membership.organization.isActive) {
+            throw new ForbiddenException('Organization is inactive');
+        }
+
         const rolePermissions = ROLE_PERMISSIONS[membership.role] ?? [];
 
         const hasAllPermissions = requiredPermissions.every((permission) => rolePermissions.includes(permission));
