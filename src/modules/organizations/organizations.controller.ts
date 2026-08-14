@@ -10,6 +10,7 @@ import { UpdateOrganizationMemberDto } from './dto/update-organization-member.dt
 import { OrganizationPermissionGuard } from './guards/organization-permission.guard';
 import { RequirePermission } from './decorators/require-permission.decorator';
 import { OrganizationPermission } from './enums/organization-permission.enum';
+import { CurrentOrganization } from './decorators/current-organization.decorator';
 
 
 @Controller('organizations')
@@ -31,7 +32,7 @@ export class OrganizationsController {
     @UseGuards(JwtAuthGuard, OrganizationPermissionGuard)
     @RequirePermission(OrganizationPermission.MEMBER_INVITE)
     addMember(
-        @Param('organizationId') organizationId: string,
+        @CurrentOrganization() organizationId: string,
         @Body() addOrganizationMemberDto: AddOrganizationMemberDto,
     ) {
         return this.organizationsService.addMember(
@@ -44,7 +45,7 @@ export class OrganizationsController {
     @UseGuards(JwtAuthGuard, OrganizationPermissionGuard)
     @RequirePermission(OrganizationPermission.MEMBER_VIEW)
     getMembers(
-        @Param('organizationId') organizationId: string
+        @CurrentOrganization() organizationId: string
     ) {
         return this.organizationsService.getMembers(organizationId)
     }
@@ -54,7 +55,7 @@ export class OrganizationsController {
     @RequirePermission(OrganizationPermission.MEMBER_UPDATE)
     async updateMemberRole(
        @Body() dto: UpdateOrganizationMemberDto,
-       @Param('organizationId') organizationId: string,
+       @CurrentOrganization() organizationId: string,
        @Param('memberId') memberId: string,
     ) {
         return await this.organizationsService.updateMemberRole(
@@ -69,7 +70,7 @@ export class OrganizationsController {
     @RequirePermission(OrganizationPermission.MEMBER_REMOVE)
     @OrganizationRoles(OrganizationRole.ADMIN, OrganizationRole.OWNER)
     async removeMember(
-        @Param('organizationId') organizationId: string,
+        @CurrentOrganization() organizationId: string,
         @Param('memberId') memberId: string,
     ) {
         return await this.organizationsService.removeMember(
