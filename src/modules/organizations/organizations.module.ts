@@ -6,6 +6,7 @@ import { Organization } from './entities/organization.entity';
 import { OrganizationMember } from './entities/organization-member.entity';
 import { User } from '../users/entities/user.entity';
 import { OrganizationRoleGuard } from './guards/organization-role.guard';
+import { OrganizationPermissionGuard } from './guards/organization-permission.guard';
 
 @Module({
   imports: [
@@ -19,10 +20,12 @@ import { OrganizationRoleGuard } from './guards/organization-role.guard';
   providers: [
     OrganizationsService,
     OrganizationRoleGuard,
+    OrganizationPermissionGuard,
 ],
   exports: [
     OrganizationsService,
     OrganizationRoleGuard,
+    OrganizationPermissionGuard,
 ]
 })
 export class OrganizationsModule {}

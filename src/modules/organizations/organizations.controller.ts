@@ -3,11 +3,13 @@ import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
-import { OrganizationRoleGuard } from './guards/organization-role.guard';
 import { OrganizationRoles } from './decorators/organization-roles.decorator';
 import { OrganizationRole } from './enums/organization-role.enum';
 import { AddOrganizationMemberDto } from './dto/add-organization-member.dto';
 import { UpdateOrganizationMemberDto } from './dto/update-organization-member.dto';
+import { OrganizationPermissionGuard } from './guards/organization-permission.guard';
+import { RequirePermission } from './decorators/require-permission.decorator';
+import { OrganizationPermission } from './enums/organization-permission.enum';
 
 
 @Controller('organizations')
@@ -26,8 +28,8 @@ export class OrganizationsController {
     }
 
     @Post(':organizationId/members')
-    @UseGuards(JwtAuthGuard, OrganizationRoleGuard)
-    @OrganizationRoles(OrganizationRole.ADMIN, OrganizationRole.OWNER)
+    @UseGuards(JwtAuthGuard, OrganizationPermissionGuard)
+    @RequirePermission(OrganizationPermission.MEMBER_INVITE)
     addMember(
         @Param('organizationId') organizationId: string,
         @Body() addOrganizationMemberDto: AddOrganizationMemberDto,
@@ -39,8 +41,8 @@ export class OrganizationsController {
     }
 
     @Get(':organizationId/members')
-    @UseGuards(JwtAuthGuard, OrganizationRoleGuard)
-    @OrganizationRoles(OrganizationRole.ADMIN, OrganizationRole.OWNER, OrganizationRole.PROCUREMENT_MANAGER)
+    @UseGuards(JwtAuthGuard, OrganizationPermissionGuard)
+    @RequirePermission(OrganizationPermission.MEMBER_VIEW)
     getMembers(
         @Param('organizationId') organizationId: string
     ) {
@@ -48,8 +50,8 @@ export class OrganizationsController {
     }
 
     @Patch(":organizationId/members/:memberId")
-    @UseGuards(JwtAuthGuard, OrganizationRoleGuard)
-    @OrganizationRoles(OrganizationRole.ADMIN, OrganizationRole.OWNER)
+    @UseGuards(JwtAuthGuard, OrganizationPermissionGuard)
+    @RequirePermission(OrganizationPermission.MEMBER_UPDATE)
     async updateMemberRole(
        @Body() dto: UpdateOrganizationMemberDto,
        @Param('organizationId') organizationId: string,
@@ -63,7 +65,8 @@ export class OrganizationsController {
     }
 
     @Delete(":organizationId/members/:memberId")
-    @UseGuards(JwtAuthGuard, OrganizationRoleGuard)
+    @UseGuards(JwtAuthGuard, OrganizationPermissionGuard)
+    @RequirePermission(OrganizationPermission.MEMBER_REMOVE)
     @OrganizationRoles(OrganizationRole.ADMIN, OrganizationRole.OWNER)
     async removeMember(
         @Param('organizationId') organizationId: string,
