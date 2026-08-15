@@ -45,6 +45,7 @@ export class ProcurementRequestItem {
     estimatedUnitPrice!: string | null
 
     @Column({
+        type: 'varchar',
         length: 3,
         nullable: true,
     })

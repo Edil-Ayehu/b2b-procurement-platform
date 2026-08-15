@@ -7,7 +7,7 @@ import { ProcurementRequestItem } from "./procurement-request-item.entity";
 
 @Entity('procurement_requests')
 export class ProcurementRequest {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn('uuid')
     id!: string
 
     @Index()
@@ -30,8 +30,8 @@ export class ProcurementRequest {
     createdBy!: User
 
     @Index()
-    @Column()
-    approvedById!: string
+    @Column({ nullable: true})
+    approvedById!: string | null
 
     @ManyToOne(() => User, { onDelete: 'RESTRICT'})
     @JoinColumn({name: 'approvedById'})
@@ -97,7 +97,7 @@ export class ProcurementRequest {
     rejectionReason!: string | null
 
     @OneToMany(() => ProcurementRequestItem, (item) => item.procurementRequest, { cascade: true})
-    items!: ProcurementRequestItem
+    items!: ProcurementRequestItem[]
 
     @CreateDateColumn()
     createdAt!: Date
