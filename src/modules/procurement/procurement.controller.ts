@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { ProcurementService } from './procurement.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OrganizationPermissionGuard } from '../organizations/guards/organization-permission.guard';
@@ -8,6 +8,7 @@ import { CurrentOrganization } from '../organizations/decorators/current-organiz
 import { CreateProcurementRequestDto } from './dto/create-procurement-request.dto';
 import { Request } from 'express';
 import { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
+import { UpdateProcurementRequestDto } from './dto/update-procurement-request.dto';
 
 @Controller('organizations/:organizationId/procurement-requests')
 @UseGuards(JwtAuthGuard, OrganizationPermissionGuard)
@@ -41,6 +42,7 @@ export class ProcurementController {
     }
 
     @Get(":requestId")
+    @RequirePermission(OrganizationPermission.PROCUREMENT_VIEW)
     findOne(
         @CurrentOrganization() organizationId: string,
         @Param('requestId') requestId: string,
@@ -48,6 +50,22 @@ export class ProcurementController {
         return this.procurementService.findOne(
             organizationId,
             requestId,
+        )
+    }
+
+    @Patch(":requestId")
+    @RequirePermission(OrganizationPermission.PROCUREMENT_UPDATE)
+    update(
+        @CurrentOrganization() organizationId: string,
+        @Param('requestId') requestId: string,
+        @Req() request: Request & { user: AuthenticatedUser},
+        @Body() dto: UpdateProcurementRequestDto
+    ) {
+        return this.procurementService.update(
+            organizationId,
+            requestId,
+            request.user.id,
+            dto
         )
     }
 
