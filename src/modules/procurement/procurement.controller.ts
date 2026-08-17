@@ -10,6 +10,7 @@ import { Request } from 'express';
 import { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
 import { UpdateProcurementRequestDto } from './dto/update-procurement-request.dto';
 import { ApproveProcurementRequestDto } from './dto/approve-procurement-request.dto';
+import { RejectProcurementRequestDto } from './dto/reject-procurement-request.dto';
 
 @Controller('organizations/:organizationId/procurement-requests')
 @UseGuards(JwtAuthGuard, OrganizationPermissionGuard)
@@ -98,6 +99,22 @@ export class ProcurementController {
             request.user.id,
             dto,
         )
+    }
+
+    @Post(":requestId/reject")
+    @RequirePermission(OrganizationPermission.PROCUREMENT_REJECT)
+    async reject(
+        @CurrentOrganization() organizationId: string,
+        @Param('requestId') requestId: string,
+        @Req() request: Request & { user: AuthenticatedUser },
+        @Body() dto: RejectProcurementRequestDto,
+    ) {
+        return await this.procurementService.reject(
+            organizationId,
+            requestId,
+            request.user.id,
+            dto,
+        );
     }
 
     @Delete(":requestId")

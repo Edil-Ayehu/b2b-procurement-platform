@@ -318,7 +318,7 @@ export class ProcurementService {
         const request = await this.procurementRequestRepo.findOne({
             where: {
                 organizationId,
-                id: rejectorId,
+                id: requestId,
             }
         });
 
