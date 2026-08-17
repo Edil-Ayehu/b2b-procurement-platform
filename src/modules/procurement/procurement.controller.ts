@@ -9,6 +9,7 @@ import { CreateProcurementRequestDto } from './dto/create-procurement-request.dt
 import { Request } from 'express';
 import { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
 import { UpdateProcurementRequestDto } from './dto/update-procurement-request.dto';
+import { ApproveProcurementRequestDto } from './dto/approve-procurement-request.dto';
 
 @Controller('organizations/:organizationId/procurement-requests')
 @UseGuards(JwtAuthGuard, OrganizationPermissionGuard)
@@ -70,6 +71,7 @@ export class ProcurementController {
     }
 
     @Post(':requestId/submit')
+    @RequirePermission(OrganizationPermission.PROCUREMENT_SUBMIT)
     async submit(
         @CurrentOrganization() organizationId: string,
         @Param('requestId') requestId: string,
@@ -80,6 +82,22 @@ export class ProcurementController {
             requestId,
             request.user.id,
         );
+    }
+
+    @Post(':requestId/approve')
+    @RequirePermission(OrganizationPermission.PROCUREMENT_APPROVE)
+    async approve(
+        @CurrentOrganization() organizationId: string,
+        @Param('requestId') requestId: string,
+        @Req() request: Request & { user: AuthenticatedUser },
+        @Body() dto: ApproveProcurementRequestDto,
+    ) {
+        return await this.procurementService.approve(
+            organizationId,
+            requestId,
+            request.user.id,
+            dto,
+        )
     }
 
     @Delete(":requestId")
