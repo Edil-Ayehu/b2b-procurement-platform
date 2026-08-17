@@ -69,6 +69,19 @@ export class ProcurementController {
         )
     }
 
+    @Post(':requestId/submit')
+    async submit(
+        @CurrentOrganization() organizationId: string,
+        @Param('requestId') requestId: string,
+        @Req() request: Request & { user: AuthenticatedUser}
+    ) {
+        return this.procurementService.submit(
+            organizationId,
+            requestId,
+            request.user.id,
+        );
+    }
+
     @Delete(":requestId")
     async deleteRequest(
         @CurrentOrganization() organizationId: string,
