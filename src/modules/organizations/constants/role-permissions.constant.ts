@@ -55,6 +55,7 @@ export const ROLE_PERMISSIONS: Record<
         OrganizationPermission.PROCUREMENT_VIEW,
         OrganizationPermission.PROCUREMENT_UPDATE,
         OrganizationPermission.PROCUREMENT_SUBMIT,
+        OrganizationPermission.PROCUREMENT_CANCEL,
 
         OrganizationPermission.PURCHASE_ORDER_VIEW,
     ],

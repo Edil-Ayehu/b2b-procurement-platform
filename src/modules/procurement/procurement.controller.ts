@@ -117,6 +117,20 @@ export class ProcurementController {
         );
     }
 
+    @Post(':requestId/cancel')
+    @RequirePermission(OrganizationPermission.PROCUREMENT_CANCEL)
+    async cancel(
+        @CurrentOrganization() organizationId: string,
+        @Param('requestId') requestId: string,
+        @Req() request: Request & { user: AuthenticatedUser }
+    ) {
+        return await this.procurementService.cancel(
+            organizationId,
+            requestId,
+            request.user.id,
+        );
+    }
+
     @Delete(":requestId")
     async deleteRequest(
         @CurrentOrganization() organizationId: string,
