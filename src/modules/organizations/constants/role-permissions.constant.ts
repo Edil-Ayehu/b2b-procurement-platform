@@ -29,6 +29,12 @@ export const ROLE_PERMISSIONS: Record<
         OrganizationPermission.PURCHASE_ORDER_APPROVE,
 
         OrganizationPermission.FINANCE_VIEW,
+
+        OrganizationPermission.SUPPLIER_CREATE,
+        OrganizationPermission.SUPPLIER_VIEW,
+        OrganizationPermission.SUPPLIER_UPDATE,
+        OrganizationPermission.SUPPLIER_MANAGE_CONTACTS,
+        OrganizationPermission.SUPPLIER_MANAGE_CATEGORIES,
     ],
 
     [OrganizationRole.PROCUREMENT_MANAGER] : [
@@ -46,6 +52,12 @@ export const ROLE_PERMISSIONS: Record<
 
         OrganizationPermission.PURCHASE_ORDER_CREATE,
         OrganizationPermission.PURCHASE_ORDER_VIEW,
+
+        OrganizationPermission.SUPPLIER_CREATE,
+        OrganizationPermission.SUPPLIER_VIEW,
+        OrganizationPermission.SUPPLIER_UPDATE,
+        OrganizationPermission.SUPPLIER_MANAGE_CONTACTS,
+        OrganizationPermission.SUPPLIER_MANAGE_CATEGORIES,
     ],
 
     [OrganizationRole.BUYER] : [
@@ -58,6 +70,9 @@ export const ROLE_PERMISSIONS: Record<
         OrganizationPermission.PROCUREMENT_CANCEL,
 
         OrganizationPermission.PURCHASE_ORDER_VIEW,
+
+        OrganizationPermission.SUPPLIER_VIEW,
+        OrganizationPermission.SUPPLIER_MANAGE_CONTACTS,
     ],
 
     [OrganizationRole.FINANCE] : [
@@ -74,5 +89,7 @@ export const ROLE_PERMISSIONS: Record<
         OrganizationPermission.PROCUREMENT_VIEW,
 
         OrganizationPermission.PURCHASE_ORDER_VIEW,
+
+        OrganizationPermission.SUPPLIER_VIEW,
     ],
 }

@@ -5,6 +5,7 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { ProcurementModule } from './modules/procurement/procurement.module';
+import { SuppliersModule } from './modules/suppliers/suppliers.module';
 
 
 @Module({
@@ -35,6 +36,8 @@ import { ProcurementModule } from './modules/procurement/procurement.module';
     OrganizationsModule,
 
     ProcurementModule,
+
+    SuppliersModule,
   ],
   controllers: [],
   providers: [],
